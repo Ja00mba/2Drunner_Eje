@@ -12,11 +12,11 @@ class logic():
 
     def DrawCharacter(self):
         runAnimation = [pygame.image.load('assets/sprites/character_anim/RunAnim_1.png'),
-               pygame.image.load('assets/sprites/character_anim/RunAnim_2.png'),
-               pygame.image.load('assets/sprites/character_anim/RunAnim_3.png'),
-               pygame.image.load('assets/sprites/character_anim/RunAnim_4.png'),
-               pygame.image.load('assets/sprites/character_anim/RunAnim_5.png'),
-               pygame.image.load('assets/sprites/character_anim/RunAnim_6.png')]
+                        pygame.image.load('assets/sprites/character_anim/RunAnim_2.png'),
+                        pygame.image.load('assets/sprites/character_anim/RunAnim_3.png'),
+                        pygame.image.load('assets/sprites/character_anim/RunAnim_4.png'),
+                        pygame.image.load('assets/sprites/character_anim/RunAnim_5.png'),
+                        pygame.image.load('assets/sprites/character_anim/RunAnim_6.png')]
 
         if self.animCount >= 6:
             self.animCount = 0
@@ -24,14 +24,14 @@ class logic():
         self.animCount += 1
 
     def DrawFloor(self):
-        floor_surface = pygame.image.load('assets/sprites/City4.png').convert()
+        floor_surface = pygame.image.load('assets/sprites/Background/City4.png').convert()
 
         self.floor_x_pos -= 5
         self.screen.blit(floor_surface, (self.floor_x_pos, 0))
         self.screen.blit(floor_surface, (self.floor_x_pos + 1280, 0))
 
     def DrawRoad(self):
-        road_surface = pygame.image.load('assets/sprites/road.png')
+        road_surface = pygame.image.load('assets/sprites/Background/road.png')
 
         self.road_pos -= 15
         self.screen.blit(road_surface, (self.road_pos, 0))
