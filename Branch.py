@@ -1,65 +1,56 @@
-import pygame, sys, random
+import pygame
+import sys
+import random
 
 
 class logic():
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.floor_x_pos = 0
-        self.bird_movement = 0
-        self.pipe_list = []
-        self.pipe_height = (200, 520)
+    def __init__(self, screen):
+        self.screen = screen
+        self.bg_pos = 0
+        self.road_pos = 0
+        self.obstaclePos = 0
+        self.obstacle_index = 0
 
-        pipe_surface = pygame.image.load('assets/sprites/pipe-green.png')
-        self.pipe_surface = pygame.transform.scale(pipe_surface, (65, 400))
+        self.animCount = 0
 
-        self.SPAWNPIPE = pygame.USEREVENT
-        pygame.time.set_timer(self.SPAWNPIPE, 1200)
+        self.floor_surface = pygame.image.load('assets/sprites/Background/City4.png').convert()
+        self.road_surface = pygame.image.load('assets/sprites/Background/road.png')
 
-        self.bird_surface = pygame.image.load('assets/sprites/subeerow.png')
+        self.runAnimation = [pygame.image.load('assets/sprites/character_anim/RunAnim_1.png'),
+                             pygame.image.load('assets/sprites/character_anim/RunAnim_2.png'),
+                             pygame.image.load('assets/sprites/character_anim/RunAnim_3.png'),
+                             pygame.image.load('assets/sprites/character_anim/RunAnim_4.png'),
+                             pygame.image.load('assets/sprites/character_anim/RunAnim_5.png'),
+                             pygame.image.load('assets/sprites/character_anim/RunAnim_6.png')]
 
-        self.bird_rect = self.bird_surface.get_rect(center=(100, 360))
+        self.obstacles = [pygame.image.load('assets/sprites/Obstacles/Trash2.png'),
+                          pygame.image.load('assets/sprites/Obstacles/boxes2.png'),
+                          pygame.image.load('assets/sprites/Obstacles/minishop2.png'),
+                          pygame.image.load('assets/sprites/Obstacles/wheels2.png'),
+                          ]
 
-    def create_pipe(self):
-        random_pipe_pos = random.randint(200, 520)
+    def DrawObstacles(self):
+        if self.obstaclePos == 0:
+            self.obstacle_index = random.randint(0, len(self.obstacles) - 1)
+        self.obstaclePos -= 15
+        self.screen.blit(self.obstacles[self.obstacle_index], (self.obstaclePos + 1280, 450))
+        self.screen.blit(self.obstacles[self.obstacle_index - 1], (self.obstaclePos + 1616, 450))
 
-        bottom_pipe = self.pipe_surface.get_rect(midtop=(1350, random_pipe_pos))
-        top_pipe = self.pipe_surface.get_rect(midbottom=(1350, random_pipe_pos - 150))
-        return bottom_pipe, top_pipe
+    def DrawCharacter(self):
+        if self.animCount >= 15:
+            self.animCount = 0
+        self.screen.blit(self.runAnimation[self.animCount // 5], (100, 570))
+        self.animCount += 1
 
-    def move_pipes(self, pipes):
-        for pipe in pipes:
-            pipe.centerx -= 5
-        return pipes
+    def DrawFloor(self):
+        self.bg_pos -= 5
+        self.screen.blit(self.floor_surface, (self.bg_pos, 0))
+        self.screen.blit(self.floor_surface, (self.bg_pos + 1280, 0))
 
-    def draw_pipes(self, pipes, screen):
-        for pipe in pipes:
-            if pipe.bottom >= 596:
-                screen.blit(self.pipe_surface, pipe)
-            else:
-                flip_pipe = pygame.transform.flip(self.pipe_surface, False, True)
-                screen.blit(flip_pipe, pipe)
-
-    def draw_bg(self, screen):
-        bg_surface = pygame.image.load('assets/sprites/background-day.png').convert()
-        screen.blit(bg_surface, (0, 0))
-
-    def draw_floor(self, screen):
-        floor_surface = pygame.image.load('assets/sprites/base.png').convert()
-        floor_surface = pygame.transform.scale2x(floor_surface)
-
-        self.floor_x_pos -= 1
-        screen.blit(floor_surface, (self.floor_x_pos, 596))
-        screen.blit(floor_surface, (self.floor_x_pos + 1280, 596))
-        screen.blit(self.bird_surface, self.bird_rect)
-
-    def check_collision(self, pipes):
-        for pipe in pipes:
-            if self.bird_rect.colliderect(pipe):
-                return False
-        if self.bird_rect.top <= -100 or self.bird_rect.bottom >= 596:
-            return False
-        return True
+    def DrawRoad(self):
+        self.road_pos -= 15
+        self.screen.blit(self.road_surface, (self.road_pos, 0))
+        self.screen.blit(self.road_surface, (self.road_pos + 1280, 0))
 
 
 if __name__ == '__main__':
@@ -70,41 +61,27 @@ if __name__ == '__main__':
     running = True
     screen = pygame.display.set_mode(SIZE)
     clock = pygame.time.Clock()
-    game = logic(WIDTH, HEIGHT)
+    game = logic(screen)
     GRAVITY = 1.5
     game_active = True
-    game.bird_movement = 0
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and game_active:
-                    game.bird_movement = 0
-                    game.bird_movement -= 16
-                if event.key == pygame.K_SPACE and game_active == False:
-                    game_active = True
-                    game.pipe_list.clear()
-                    game.bird_rect.center = (100, 360)
-                    game.bird_movement = 0
-                    game.bird_movement -= 16
-            if event.type == game.SPAWNPIPE:
-                game.pipe_list.extend(game.create_pipe())
 
-        game.draw_bg(screen)
+        game.DrawFloor()
 
-        if game_active:
-            game_active = game.check_collision(game.pipe_list)
-            game.bird_movement += GRAVITY
-            game.bird_rect.centery += game.bird_movement
-            game.pipe_list = game.move_pipes(game.pipe_list)
-            game.draw_pipes(game.pipe_list, screen)
+        game.DrawRoad()
+        game.DrawObstacles()
+        game.DrawCharacter()
 
-        game.draw_floor(screen)
-
-        if game.floor_x_pos <= -576:
-            game.floor_x_pos = 0
+        if game.bg_pos <= -1280:
+            game.bg_pos = 0
+        if game.road_pos <= -1280:
+            game.road_pos = 0
+        if game.obstaclePos <= -1952:
+            game.obstaclePos = 0
         pygame.display.update()
-        clock.tick(120)
+        clock.tick(FPS)
